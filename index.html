@@ -5,28 +5,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link href="styles/main.css" rel="stylesheet">
 </head>
 
 <body>
   <h1>Mr. SF's Website</h1>
 
-  <h2>About Me</h2>
+  <h2 class="silly">About Me</h2>
   <p>Some stuff about me. <strong>Please be nice!</strong></p>
 
-  <h2>My Classes</h2>
-  <p>Some stuff about <em>my</em> classes
+  <h2 class="important">My Classes</h2>
+  <p class="important silly">Some stuff about <em>my</em> classes
     at <a href="https://redwood.org">Redwood</a>.</p>
-  <li>Bad list item, not in a list element!</li>
   <ul>
+    <li>Good list item, in a list element!</li>
+  </ul>
+  <ul>
+    <h2>BAD HEADING</h2>
     <li>1st period Computer Programming 1/2</li>
     <li>2nd period Computer Programming 1/2</li>
     <li>3rd period AP CS A</li>
     <li>
-    <ol>
-      <li><a href="https://google.com">Student A</a></li>
-      <li>Student B</li>
-      <li>Student C</li>
-    </ol>
+      <ol>
+        <li><a href="https://google.com">Student A</a></li>
+        <li>Student B</li>
+        <li>Student C</li>
+      </ol>
     </li>
   </ul>
   <ol>
@@ -35,11 +39,7 @@
     <li>AP CS A</li>
   </ol>
 
-  <img
-    src="images/train.jpg"
-    alt="An image of a train."
-    style="width: 100%; height: 24px;"
-    >
+  <img src="images/train.jpg" alt="An image of a train." style="width: 100%; height: 24px;">
 </body>
 
 </html>

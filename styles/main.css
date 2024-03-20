@@ -1,0 +1,13 @@
+.important {
+    border: 1px red solid;
+    font-size: x-large;
+    background-color: aliceblue;
+}
+
+.silly {
+    color: magenta;
+}
+
+body {
+    background-color: lightcoral;
+}
