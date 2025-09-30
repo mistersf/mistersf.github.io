@@ -9,12 +9,14 @@ html {
 body {
     color: var(--text);
     background: var(--background);
+    font-family: "Noto Sans";
 }
 
 h1,
 h2,
 h3 {
     color: var(--primary);
+    font-family: "Bitcount Ink";
 }
 
 p {
