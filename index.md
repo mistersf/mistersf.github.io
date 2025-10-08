@@ -1,0 +1,42 @@
+---
+layout: default
+title: Mister SF's Website
+---
+<p>This is my website!</p>
+<h2>My Family</h2>
+<p>This is a section about my family.</p>
+<ul>
+    <li>My Cats <ul>
+            <li>Bandit</li>
+            <li>Nova</li>
+            <li>Maddie</li>
+            <li>Felix</li>
+        </ul>
+    </li>
+    <li>Everyone else</li>
+</ul>
+<h2>My Hobbies</h2>
+<h3>Making Things</h3>
+<p>
+    I really like to make things,
+    whether it's software, woodworking, crochet, or anything else.
+</p>
+<h3>Games</h3>
+<ol>
+    <li>Factorio</li>
+    <li>Slay the Spire</li>
+    <li>Rift Wizard 2</li>
+    <li>Lots of others.</li>
+</ol>
+<h2>Example Elements</h2>
+<a href="https://www.google.com">Link to Google</a>
+<br>
+<img src="images/100x100.png" alt="A 100x100 placeholder image.">
+<br>
+<audio controls src="audio/seven_nation_army_mrsf.wav"></audio>
+<br>
+<video controls src="videos/flower.webm" type="video/webm"></video>
+
+</body>
+
+</html>

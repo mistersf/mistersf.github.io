@@ -1,0 +1,41 @@
+html {
+    --text: #000000;
+    --background: #d7f1ff;
+    --primary: #0088ff;
+    --secondary: #d573ff;
+    --accent: #bbffbb;
+}
+
+body {
+    color: var(--text);
+    background: var(--background);
+    font-family: "Noto Sans";
+}
+
+h1,
+h2,
+h3 {
+    color: var(--primary);
+    font-family: "Bitcount Ink";
+}
+
+p {
+    background: var(--accent);
+    padding: 4px;
+    border: 1px solid var(--text);
+}
+
+li::marker {
+    color: var(--secondary);
+}
+
+img {
+    padding: 4px;
+    border: 4px solid var(--secondary);
+    border-radius: 16px;
+    background: var(--primary);
+}
+
+audio {
+    background: var(--secondary);
+}
