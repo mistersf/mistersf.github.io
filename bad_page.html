@@ -1,69 +1,38 @@
 <!DOCTYPE html>
-<html lang="eng-US"> <!-- ERROR 1: Invalid language code (should be en-US) -->
+<html lang="en">
 
 <head>
-	<!-- ERROR 2: <meta charset> should be the first thing in <head> -->
-	<link rel="stylesheet" href="styles.css">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <p>Paragraph in head, not body!</p>
 </head>
 
-<body role="main"> <!-- ERROR 3: role="main" used while a <main> element also exists below -->
-	<header id="main">
-		<h1>Validator Demo</h1>
-	</header>
-
-	<main id="main"> <!-- ERROR 4: Duplicate id "main" (already used in <header>) -->
-		<p>
-			This is a <span>paragraph with a block-level child:
-				<div>block inside span</div> <!-- ERROR 5: <div> not allowed as child of inline <span> -->
-			</span>
-		</p>
-
-		<p><div>Another bad div inside p.</div></p> <!-- ERROR 6: <div> not allowed as a child of <p> -->
-
-		<p><em><strong>Mismatched nesting</em></strong></p> <!-- ERROR 7: Misnested tags -->
-
-		<img src="kitten.jpg" width="300"> <!-- ERROR 8: <img> missing required alt attribute -->
-
-		<center>Centered text using obsolete element.</center> <!-- ERROR 9: Obsolete element <center> -->
-
-		<font color="red" size="5">Old-school font tag.</font> <!-- ERROR 10: Obsolete element/attributes -->
-
-		<div class="self-closing" /> <!-- ERROR 11: Non-void element written as self-closing -->
-
-		<ul>
-			<li>Correct item</li>
-			<div>Wrong child inside UL</div> <!-- ERROR 12: Only <li> allowed directly inside <ul> -->
-		</ul>
-
-		<form action="/submit" method="post">
-			<label for="email">Email</label>
-			<input id="email" type="email" autofocus>
-
-			<label for="name">Name</label>
-			<input id="name" type="text" autofocus> <!-- ERROR 13: Multiple autofocus controls in one document -->
-
-			<label for="missing">Missing input</label> <!-- ERROR 14: for="missing" has no matching id -->
-
-			<button aria-labeledby="submit-label">Send</button> <!-- ERROR 15: Misspelled ARIA attribute (aria-labelledby) -->
-			<span id="submit-label">Submit the form</span>
-		</form>
-
-		<a href="http:////example.com" target="_blank">Bad URL</a> <!-- ERROR 16: Malformed URL (likely flagged) -->
-
-		<main>Second main region</main> <!-- ERROR 17: More than one <main> element -->
-
-		<table>
-			<tr>
-				<td>Cell 1 <!-- ERROR 18a: Missing </td> -->
-			<tr> <!-- ERROR 18b: Missing </tr> for previous row; improper row nesting -->
-				<th>Header under wrong row</th> <!-- ERROR 18c: Structural table issues -->
-		</table>
-
-		<img src="photo.jpg" alt="example" foo="bar"> <!-- ERROR 19: Unknown attribute "foo" on <img> -->
-	</main>
-
-	<script type="text/javascript/invalid">console.log('bad type');</script> <!-- ERROR 20: Invalid script type value -->
+<body>
+    <!-- This h1 is okay. -->
+    <h1>Website Title</h1>
+    <!-- Missing h2 element -->
+    <h3>Oops, skipped h2!</h3>
+    <!-- Incorrect second h1 -->
+    <h1>Second h1</h1>
+    <!-- No list element -->
+    <li>List 1</li>
+    <li>List 2</li>
+    <!-- Image closing tag and no alt-text -->
+    <img src="images/100x100.png"></img>
+    <!-- Unclosed <p> -->
+    <p>Unclosed paragraph
+        <!-- Non-<li> elements in a list -->
+    <ul>
+        <p>Paragraph in a list 1</p>
+        <p>Paragraph in a list 2</p>
+        <p>Paragraph in a list 3</p>
+    </ul>
+    <!-- Paragraph elements aren't allowed in headings -->
+    <h2>
+        <p>Paragraph in a heading</p>
+    </h2>
 </body>
-</html>
+<!-- Element outside of body element -->
+<p>Element outside of body</p>
+<!-- Missing closing HTML tag -->
