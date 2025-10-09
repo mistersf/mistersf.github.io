@@ -1,0 +1,21 @@
+h1 {
+    color: ren;
+}
+
+h2 {
+    border: 1pl red solin;
+}
+
+h3 {
+    bg-color: orchid;
+}
+
+p,
+li,
+{
+color: pink;
+}
+
+p {
+    transform: rotate(10px);
+}
