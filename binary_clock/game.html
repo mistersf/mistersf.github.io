@@ -62,11 +62,14 @@
             </tr>
         </table>
     </div>
+    <div>Press Tab and Shift+Tab to navigate between hours-minutes-seconds.<br>Press Enter to submit your answer.</div>
     <div id="decimal-clock">
         Decimal Time:
-        <input type="number" id="decimal-hours" min="0" max="23" value="0"> :
-        <input type="number" id="decimal-minutes" min="0" max="59" value="0"> :
-        <input type="number" id="decimal-seconds" min="0" max="59" value="0">
+        <!-- <input type="time" name="decimal-time" id="decimal-time" step="1"> -->
+        <!-- Has some annoyances depending on browser. -->
+        <input autofocus tabindex="1" type="number" id="decimal-hours" min="0" max="23" value=""> :
+        <input tabindex="2" type="number" id="decimal-minutes" min="0" max="59" value=""> :
+        <input tabindex="3" type="number" id="decimal-seconds" min="0" max="59" value="">
         <button type="submit" id="submit-button">Submit</button>
     </div>
     <button id="restart-button">Restart Game</button>
@@ -154,6 +157,10 @@
                 log('Correct! +' + difficultyPoints[difficulty] + ' points.');
                 pointsSpan.textContent = points;
                 currentTime = playRound();
+                decimalHoursInput.value = '';
+                decimalMinutesInput.value = '';
+                decimalSecondsInput.value = '';
+                decimalHoursInput.focus();
             } else {
                 log(`Incorrect!`);
                 difficulty = Math.min(difficulty + 1, difficultyPoints.length - 1);
