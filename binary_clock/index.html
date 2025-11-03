@@ -74,17 +74,34 @@
             </tr>
         </table>
     </div>
-    <div id="decimal-clock"></div>
+    <div id="decimal-clock">
+        Decimal Time:
+        <input type="number" id="decimal-hours" min="0" max="23" value="0"> :
+        <input type="number" id="decimal-minutes" min="0" max="59" value="0"> :
+        <input type="number" id="decimal-seconds" min="0" max="59" value="0">
+        <button type="reset" disabled>Reset to current time</button>
+    </div>
     <input type="checkbox" name="details" id="details-toggle">
     <label for="details-toggle"> Show Details</label>
     <script>
         const binaryTable = document.querySelector('#binary-clock table');
+        const decimalHoursInput = document.getElementById('decimal-hours');
+        const decimalMinutesInput = document.getElementById('decimal-minutes');
+        const decimalSecondsInput = document.getElementById('decimal-seconds');
+        const resetButton = document.querySelector('button[type="reset"]');
+        let pause = false;
+        let customTime = { h: 0, m: 0, s: 0 };
         function updateBinaryClock() {
             let detailsVisible = document.getElementById('details-toggle').checked;
             const now = new Date();
-            const h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            if (pause) {
+                h = customTime.h;
+                m = customTime.m;
+                s = customTime.s;
+            }
             for (let i = 0; i < 6; i++) {
                 const bitValue = 1 << (5 - i);
                 const hOn = (h & bitValue);
@@ -112,10 +129,34 @@
                 binaryTable.rows[2].cells[6].innerText = '';
                 binaryTable.rows[3].cells[6].innerText = '';
             }
-            const decimalTime = now.toLocaleTimeString();
-            document.getElementById('decimal-clock').innerText = `Decimal Time: ${decimalTime}`;
+            if (!pause) {
+                const decimalTime = now.toLocaleTimeString();
+                decimalHoursInput.value = h;
+                decimalMinutesInput.value = m;
+                decimalSecondsInput.value = s;
+            }
         }
         setInterval(updateBinaryClock, 1000);
+        function handleChange() {
+            pause = true;
+            resetButton.disabled = false;
+            customTime.h = parseInt(decimalHoursInput.value);
+            customTime.m = parseInt(decimalMinutesInput.value);
+            customTime.s = parseInt(decimalSecondsInput.value);
+            updateBinaryClock();
+        }
+        decimalHoursInput.addEventListener('change', handleChange);
+        decimalMinutesInput.addEventListener('change', handleChange);
+        decimalSecondsInput.addEventListener('change', handleChange);
+        resetButton.addEventListener('click', () => {
+            pause = false;
+            resetButton.disabled = true;
+            customTime = { h: 0, m: 0, s: 0 };
+            const now = new Date();
+            decimalHoursInput.value = now.getHours();
+            decimalMinutesInput.value = now.getMinutes();
+            decimalSecondsInput.value = now.getSeconds();
+        });
     </script>
 </body>
 
