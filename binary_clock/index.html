@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Clock</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: lightcyan;
+        }
+
+        #binary-clock,
+        #decimal-clock {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #binary-clock td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid slategray;
+            background-color: slategray;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Binary Clock</h1>
+    <div id="binary-clock">
+        <table>
+            <tr>
+                <th>32</th>
+                <th>16</th>
+                <th>8</th>
+                <th>4</th>
+                <th>2</th>
+                <th>1</th>
+                <th>sum</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div id="decimal-clock"></div>
+    <input type="checkbox" name="details" id="details-toggle">
+    <label for="details-toggle"> Show Details</label>
+    <script>
+        const binaryTable = document.querySelector('#binary-clock table');
+        function updateBinaryClock() {
+            let detailsVisible = document.getElementById('details-toggle').checked;
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            for (let i = 0; i < 6; i++) {
+                const bitValue = 1 << (5 - i);
+                const hOn = (h & bitValue);
+                const mOn = (m & bitValue);
+                const sOn = (s & bitValue);
+                binaryTable.rows[1].cells[i].style.backgroundColor = hOn ? '#00aaff' : 'slategray';
+                binaryTable.rows[2].cells[i].style.backgroundColor = mOn ? '#00aaff' : 'slategray';
+                binaryTable.rows[3].cells[i].style.backgroundColor = sOn ? '#00aaff' : 'slategray';
+                if (!detailsVisible) {
+                    binaryTable.rows[1].cells[i].innerText = hOn ? '1' : '0';
+                    binaryTable.rows[2].cells[i].innerText = mOn ? '1' : '0';
+                    binaryTable.rows[3].cells[i].innerText = sOn ? '1' : '0';
+                    continue;
+                }
+                binaryTable.rows[1].cells[i].innerText = hOn ? bitValue : '0';
+                binaryTable.rows[2].cells[i].innerText = mOn ? bitValue : '0';
+                binaryTable.rows[3].cells[i].innerText = sOn ? bitValue : '0';
+            }
+            if (detailsVisible) {
+                binaryTable.rows[1].cells[6].innerText = h;
+                binaryTable.rows[2].cells[6].innerText = m;
+                binaryTable.rows[3].cells[6].innerText = s;
+            } else {
+                binaryTable.rows[1].cells[6].innerText = '';
+                binaryTable.rows[2].cells[6].innerText = '';
+                binaryTable.rows[3].cells[6].innerText = '';
+            }
+            const decimalTime = now.toLocaleTimeString();
+            document.getElementById('decimal-clock').innerText = `Decimal Time: ${decimalTime}`;
+        }
+        setInterval(updateBinaryClock, 1000);
+    </script>
+</body>
+
+</html>
