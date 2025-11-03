@@ -135,18 +135,26 @@
                 }
             }
         }
+        function log(message) {
+            logDiv.innerText = message;
+            logDiv.classList.add('new-message');
+            setTimeout(() => {
+                logDiv.classList.remove('new-message');
+            }, 500);
+        }
         function handleSubmit() {
+            if (timeLeft <= 0) return;
             let hGuess = parseInt(decimalHoursInput.value);
             let mGuess = parseInt(decimalMinutesInput.value);
             let sGuess = parseInt(decimalSecondsInput.value);
             if (hGuess === currentTime.h && mGuess === currentTime.m && sGuess === currentTime.s) {
                 points += difficultyPoints[difficulty];
                 timeLeft += difficultyPoints[difficulty];
-                logDiv.innerText = 'Correct! +' + difficultyPoints[difficulty] + ' points.';
+                log('Correct! +' + difficultyPoints[difficulty] + ' points.');
                 pointsSpan.textContent = points;
                 currentTime = playRound();
             } else {
-                logDiv.innerText = `Incorrect!`;
+                log(`Incorrect!`);
                 difficulty = Math.min(difficulty + 1, difficultyPoints.length - 1);
                 timeLeft -= 1;
                 possiblePointsSpan.textContent = difficultyPoints[difficulty];
@@ -194,21 +202,28 @@
             pointsSpan.textContent = points;
             timeLeftSpan.textContent = timeLeft;
             currentTime = playRound();
+            submitButton.disabled = false;
+            log('Starting new game! Good luck!');
             let gameInterval = setInterval(() => {
                 timeLeft--;
                 timeLeftSpan.textContent = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(gameInterval);
-                    logDiv.innerText = 'Game Over! Final Points: ' + points;
+                    log('Game Over! Final Points: ' + points);
                     submitButton.disabled = true;
                     if (points > highScore) {
                         highScore = points;
                         window.localStorage.setItem('binaryClockHighScore', highScore);
-                        logDiv.innerText += ' New High Score!';
+                        log(' New High Score!');
                     }
                 }
             }, 1000);
             restartButton.onclick = function () {
+                if (points > highScore) {
+                    highScore = points;
+                    window.localStorage.setItem('binaryClockHighScore', highScore);
+                }
+                updateHighScore();
                 clearInterval(gameInterval);
                 playGame();
             };

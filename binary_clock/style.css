@@ -41,3 +41,14 @@ nav {
     justify-content: center;
     gap: 15px;
 }
+
+#log {
+    margin-top: 15px;
+    font-weight: bold;
+    min-height: 24px;
+    transition: font-size 0.3s;
+}
+
+#log.new-message {
+    font-size: 1.2em;
+}
