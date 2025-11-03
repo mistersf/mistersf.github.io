@@ -29,6 +29,18 @@
             border: 1px solid slategray;
             background-color: slategray;
         }
+
+        #binary-clock th {
+            width: 50px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid slategray;
+            background-color: lightgray;
+        }
+
+        #binary-clock td:last-child {
+            background-color: lightgray;
+        }
     </style>
 </head>
 
@@ -82,7 +94,7 @@
         <button type="reset" disabled>Reset to current time</button>
     </div>
     <input type="checkbox" name="details" id="details-toggle">
-    <label for="details-toggle"> Show Details</label>
+    <label for="details-toggle"> Show Place Values</label>
     <script>
         const binaryTable = document.querySelector('#binary-clock table');
         const decimalHoursInput = document.getElementById('decimal-hours');
@@ -120,15 +132,9 @@
                 binaryTable.rows[2].cells[i].innerText = mOn ? bitValue : '0';
                 binaryTable.rows[3].cells[i].innerText = sOn ? bitValue : '0';
             }
-            if (detailsVisible) {
-                binaryTable.rows[1].cells[6].innerText = h;
-                binaryTable.rows[2].cells[6].innerText = m;
-                binaryTable.rows[3].cells[6].innerText = s;
-            } else {
-                binaryTable.rows[1].cells[6].innerText = '';
-                binaryTable.rows[2].cells[6].innerText = '';
-                binaryTable.rows[3].cells[6].innerText = '';
-            }
+            binaryTable.rows[1].cells[6].innerText = h;
+            binaryTable.rows[2].cells[6].innerText = m;
+            binaryTable.rows[3].cells[6].innerText = s;
             if (!pause) {
                 const decimalTime = now.toLocaleTimeString();
                 decimalHoursInput.value = h;
