@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blank Binary Clock</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Undo final row - hacky ew */
+        #binary-clock td:last-child {
+            background-color: slategray;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="binary-clock">
+        <table>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        const binaryTable = document.querySelector('#binary-clock table');
+        function updateBinaryClock() {
+            const now = new Date();
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            for (let i = 0; i < 6; i++) {
+                const bitValue = 1 << (5 - i);
+                const hOn = (h & bitValue);
+                const mOn = (m & bitValue);
+                const sOn = (s & bitValue);
+                binaryTable.rows[0].cells[i].style.backgroundColor = hOn ? '#00aaff' : 'slategray';
+                binaryTable.rows[1].cells[i].style.backgroundColor = mOn ? '#00aaff' : 'slategray';
+                binaryTable.rows[2].cells[i].style.backgroundColor = sOn ? '#00aaff' : 'slategray';
+            }
+        }
+        setInterval(updateBinaryClock, 1000);
+    </script>
+</body>
+
+</html>
