@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Clock Game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Undo final row - hacky ew */
+        #binary-clock td:last-child {
+            background-color: slategray;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Binary Clock Game</h1>
+    <nav>
+        <a href="./">Binary Clock Explorer</a>
+        <a>Binary Clock Game</a>
+    </nav>
+    <div>Points: <span id="points">0</span> (+<span id="possible-points">25</span> for a correct answer)
+    </div>
+    <div hidden>High Score: <span id="high-score">0</span></div>
+    <div>Time Left: <span id="time-left">60</span> seconds</div>
+    <div id="log"></div>
+    <div id="binary-clock">
+        <table>
+            <tr id="place-values-row" hidden>
+                <th>32</th>
+                <th>16</th>
+                <th>8</th>
+                <th>4</th>
+                <th>2</th>
+                <th>1</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div id="decimal-clock">
+        Decimal Time:
+        <input type="number" id="decimal-hours" min="0" max="23" value="0"> :
+        <input type="number" id="decimal-minutes" min="0" max="59" value="0"> :
+        <input type="number" id="decimal-seconds" min="0" max="59" value="0">
+        <button type="submit" id="submit-button">Submit</button>
+    </div>
+    <button id="restart-button">Restart Game</button>
+    <script>
+        let points = 0;
+        let highScore = window.localStorage.getItem('binaryClockHighScore') || 0;
+        let timeLeft = 60;
+        let difficulty = 0;
+        let difficultyPoints = [15, 10, 5, 1, 0];
+        const pointsSpan = document.getElementById('points');
+        const possiblePointsSpan = document.getElementById('possible-points');
+        const highScoreSpan = document.getElementById('high-score');
+        updateHighScore();
+        const timeLeftSpan = document.getElementById('time-left');
+        const logDiv = document.getElementById('log');
+        const binaryTable = document.querySelector('#binary-clock table');
+        const placeValuesRow = document.getElementById('place-values-row');
+        const decimalHoursInput = document.getElementById('decimal-hours');
+        const decimalMinutesInput = document.getElementById('decimal-minutes');
+        const decimalSecondsInput = document.getElementById('decimal-seconds');
+        const submitButton = document.getElementById('submit-button');
+        const restartButton = document.getElementById('restart-button');
+        let currentTime = { h: 0, m: 0, s: 0 };
+        function playRound() {
+            difficulty = 0;
+            possiblePointsSpan.textContent = difficultyPoints[difficulty];
+            placeValuesRow.hidden = true;
+            let h = Math.floor(Math.random() * 24);
+            let m = Math.floor(Math.random() * 60);
+            let s = Math.floor(Math.random() * 60);
+            updateBinaryClock(h, m, s);
+            // drawValues(h, m, s);
+            return { h, m, s };
+        }
+        function updateBinaryClock(h, m, s) {
+            const rows = binaryTable.querySelectorAll('tr');
+            const timeValues = [h, m, s];
+            for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
+                let value = timeValues[rowIndex];
+                for (let colIndex = 0; colIndex < 6; colIndex++) {
+                    const cell = rows[rowIndex + 1].cells[colIndex];
+                    const placeValue = 1 << (5 - colIndex);
+                    if (value >= placeValue) {
+                        cell.style.backgroundColor = '#00aaff';
+                        value -= placeValue;
+                    } else {
+                        cell.style.backgroundColor = '';
+                    }
+                    cell.innerText = '';
+                }
+            }
+        }
+        function drawValues(h, m, s) {
+            const rows = binaryTable.querySelectorAll('tr');
+            const timeValues = [h, m, s];
+            for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
+                let value = timeValues[rowIndex];
+                for (let colIndex = 0; colIndex < 6; colIndex++) {
+                    const cell = rows[rowIndex + 1].cells[colIndex];
+                    const placeValue = 1 << (5 - colIndex);
+                    if (value >= placeValue) {
+                        cell.innerText = placeValue;
+                        value -= placeValue;
+                    } else {
+                        cell.innerText = 0;
+                    }
+                }
+            }
+        }
+        function handleSubmit() {
+            let hGuess = parseInt(decimalHoursInput.value);
+            let mGuess = parseInt(decimalMinutesInput.value);
+            let sGuess = parseInt(decimalSecondsInput.value);
+            if (hGuess === currentTime.h && mGuess === currentTime.m && sGuess === currentTime.s) {
+                points += difficultyPoints[difficulty];
+                timeLeft += difficultyPoints[difficulty];
+                logDiv.innerText = 'Correct! +' + difficultyPoints[difficulty] + ' points.';
+                pointsSpan.textContent = points;
+                currentTime = playRound();
+            } else {
+                logDiv.innerText = `Incorrect!`;
+                difficulty = Math.min(difficulty + 1, difficultyPoints.length - 1);
+                timeLeft -= 1;
+                possiblePointsSpan.textContent = difficultyPoints[difficulty];
+                if (difficulty > 0) {
+                    placeValuesRow.hidden = false;
+                }
+                if (difficulty > 1) {
+                    drawValues(currentTime.h, currentTime.m, currentTime.s);
+                }
+                if (difficulty > 2) {
+                    logDiv.innerText += ` The correct time was ${currentTime.h}:${currentTime.m}:${currentTime.s}.`;
+                }
+                if (difficulty > 3) {
+                    difficulty = 0;
+                    currentTime = playRound();
+                }
+            }
+        };
+        submitButton.addEventListener('click', handleSubmit);
+        decimalHoursInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+        decimalMinutesInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+        decimalSecondsInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+        function updateHighScore() {
+            highScoreSpan.textContent = highScore;
+            if (highScore > 0) {
+                highScoreSpan.parentElement.hidden = false;
+            }
+        }
+        function playGame() {
+            timeLeft = 60;
+            points = 0;
+            difficulty = 0;
+            pointsSpan.textContent = points;
+            timeLeftSpan.textContent = timeLeft;
+            currentTime = playRound();
+            let gameInterval = setInterval(() => {
+                timeLeft--;
+                timeLeftSpan.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    logDiv.innerText = 'Game Over! Final Points: ' + points;
+                    submitButton.disabled = true;
+                    if (points > highScore) {
+                        highScore = points;
+                        window.localStorage.setItem('binaryClockHighScore', highScore);
+                        logDiv.innerText += ' New High Score!';
+                    }
+                }
+            }, 1000);
+            restartButton.onclick = function () {
+                clearInterval(gameInterval);
+                playGame();
+            };
+        }
+        playGame();
+
+    </script>
+</body>
+
+</html>
