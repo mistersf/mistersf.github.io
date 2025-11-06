@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Demo</title>
+</head>
+
+<body>
+    <h1>Events Demo</h1>
+    <button id="myButton">Click Me!</button>
+    <script>
+        document.getElementById("myButton").addEventListener("click", (event) => {
+            console.log("click event:", event);
+        });
+        document.getElementById("myButton").addEventListener("mousedown", (event) => {
+            console.log("mousedown event:", event);
+        });
+    </script>
+</body>
+
+</html>
