@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .flex {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flex">
+      <label>Test 1<input type="checkbox" value="1" name="options" /></label
+      ><label>Test 2<input type="checkbox" value="2" name="options" /></label
+      ><label>Test 3<input type="checkbox" value="3" name="options" /></label
+      ><label>Test 4<input type="checkbox" value="4" name="options" /></label
+      ><label>Test 5<input type="checkbox" value="5" name="options" /></label
+      ><label>Test 6<input type="checkbox" value="6" name="options" /></label
+      ><label>Test 7<input type="checkbox" value="7" name="options" /></label
+      ><label>Test 8<input type="checkbox" value="8" name="options" /></label
+      ><label>Test 9<input type="checkbox" value="9" name="options" /></label
+      ><label>Test 10<input type="checkbox" value="10" name="options" /></label>
+    </div>
+    <script>
+      const checkboxes = document.getElementsByName("options");
+      // const checkboxes = document.querySelectorAll('input[name="options"]');
+      const max_checked = 3;
+      let checked_count = 0;
+      for (const checkbox of checkboxes) {
+        checkbox.addEventListener("change", function (event) {
+          if (checked_count >= max_checked && this.checked) {
+            this.checked = false;
+            alert(`You can only select up to ${max_checked} options.`);
+            return;
+          }
+          if (this.checked) {
+            checked_count++;
+          } else {
+            checked_count--;
+          }
+          console.log(
+            `${this.value} is ${this.checked}; checked_count: ${checked_count}`
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
