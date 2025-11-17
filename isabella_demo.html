@@ -44,6 +44,15 @@
           console.log(
             `${this.value} is ${this.checked}; checked_count: ${checked_count}`
           );
+          const checked_boxes = document.querySelectorAll(
+            'input[name="options"]:checked'
+          );
+          //   const values = Array.from(checked_boxes).map((box) => box.value);
+          let values = [];
+          for (const box of checked_boxes) {
+            values.push(box.value);
+          }
+          console.log("Checked values:" + values);
         });
       }
     </script>
