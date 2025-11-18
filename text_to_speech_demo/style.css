@@ -81,5 +81,26 @@ label {
 }
 
 #history {
-  font-size: 2rem;
+  font-size: 1rem;
+}
+
+.flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row {
+  flex-direction: row;
+}
+
+.full {
+  width: 100vw;
+}
+
+.flex div {
+  flex-grow: 1;
+}
+
+h2 {
+  text-align: center;
 }

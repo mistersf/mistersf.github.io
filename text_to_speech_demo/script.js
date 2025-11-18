@@ -5,6 +5,7 @@ const voiceSelect = document.querySelector("select");
 const volumeRange = document.getElementById("volumeSlider");
 const snippetsEl = document.getElementById("snippets");
 const historyEl = document.getElementById("history");
+const queueEl = document.getElementById("queue");
 const clearHistoryButton = document.getElementById("clearButton");
 
 let voices = [];
@@ -22,6 +23,8 @@ let snippets = [
   "What?",
   "Why?",
   "How?",
+  "Please",
+  "Thank you!",
   "I lost my voice and can't talk right now."
 ]
 
@@ -64,11 +67,15 @@ function populateVoiceList() {
 
 populateVoiceList();
 
-for (const snippet of snippets){
+for (let snippet of snippets){
+  snippet += " "
   const snippetEl = document.createElement("button")
   snippetEl.textContent = snippet
   snippetEl.addEventListener("click", () => {
     toSpeak.push(snippet)
+    const snippetQueueEl = document.createElement("li")
+    snippetQueueEl.textContent = snippet
+    queueEl.appendChild(snippetQueueEl)
     speak()
   })
   snippetsEl.appendChild(snippetEl);
@@ -86,6 +93,7 @@ function speak() {
 
   let msg = toSpeak.shift();
   historyEl.textContent += msg;
+  queueEl.firstChild?.remove()
 
   if (msg !== "") {
     alreadyRead += msg;
@@ -137,6 +145,9 @@ function _speakInput() {
   let newText = inputTxt.value;
   inputTxt.value = "";
   toSpeak.push(newText);
+  const queueEntryEl = document.createElement("li")
+  queueEntryEl.textContent = newText
+  queueEl.appendChild(queueEntryEl)
   speak();
 }
 
