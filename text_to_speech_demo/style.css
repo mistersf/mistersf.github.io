@@ -94,13 +94,18 @@ label {
 }
 
 .full {
-  width: 100vw;
+  width: 100%;
+}
+
+.full * * {
+  margin: 4px;
 }
 
 .flex div {
   flex-grow: 1;
+  max-width: 50%;
 }
 
 h2 {
-  text-align: center;
+  /* text-align: center; */
 }
