@@ -78,7 +78,7 @@
           let neededGrade = Math.max(0, (gradeObj.minGPA - grade * 0.8) / 0.2);
           let neededFinal = Math.min(4, neededGrade);
           gradeObj.neededFinal = ["F", "D", "C", "B", "A"][
-            parseInt(neededFinal)
+            Math.ceil(neededFinal)
           ];
         }
 
