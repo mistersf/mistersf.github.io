@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grade Tester</title>
+  </head>
+  <body>
+    <label for="currentGrade"
+      >Current Grade:
+      <input
+        type="range"
+        name="currentGradeRange"
+        id="currentGradeRange"
+        min="0"
+        max="4"
+        step="0.1"
+        value="3.00" />
+      <input
+        type="number"
+        name="currentGradeNumber"
+        id="currentGradeNumber"
+        value="3.00"
+    /></label>
+    <div id="output"></div>
+    <script>
+      const grades = [
+        {
+          letter: "A",
+          minGPA: 3.5,
+        },
+        {
+          letter: "B",
+          minGPA: 2.5,
+        },
+        {
+          letter: "C",
+          minGPA: 1.5,
+        },
+        {
+          letter: "D",
+          minGPA: 0.5,
+        },
+      ];
+      const currentGradeRangeEl = document.getElementById("currentGradeRange");
+      const currentGradeNumberEl =
+        document.getElementById("currentGradeNumber");
+
+      const outputEl = document.getElementById("output");
+
+      currentGradeRangeEl.addEventListener("input", (event) => {
+        const grade = parseFloat(event.target.value);
+        currentGradeNumberEl.value = grade.toFixed(2);
+        updateOutput(grade);
+      });
+      currentGradeNumberEl.addEventListener("input", (event) => {
+        let grade = parseFloat(event.target.value);
+        if (isNaN(grade)) grade = 0;
+        if (grade < 0) grade = 0;
+        if (grade > 4) grade = 4;
+        currentGradeRangeEl.value = grade;
+        updateOutput(grade);
+      });
+
+      function updateOutput(grade) {
+        let letterGrade = "";
+        for (const gradeObj of grades) {
+          if (grade >= gradeObj.minGPA) {
+            letterGrade = gradeObj.letter;
+            break;
+          } else {
+            letterGrade = "F";
+          }
+        }
+
+        // Final is 20% of grade, find needed final grade for each letter
+        for (const gradeObj of grades) {
+          let neededGrade = Math.max(0, (gradeObj.minGPA - grade * 0.8) / 0.2);
+          let neededFinal = Math.min(4, neededGrade);
+          gradeObj.neededFinal = ["F", "D", "C", "B", "A"][
+            parseInt(neededFinal)
+          ];
+        }
+
+        outputEl.innerHTML = `
+            <p>Letter Grade: ${letterGrade}</p>
+            <p>Needed Final Grades:</p>
+            <ul>
+              ${grades
+                .map(
+                  (gradeObj) =>
+                    `<li>${gradeObj.letter}: ${gradeObj.neededFinal}</li>`
+                )
+                .join("")}
+            </ul>
+            `;
+      }
+      updateOutput(parseFloat(currentGradeRangeEl.value));
+    </script>
+  </body>
+</html>
