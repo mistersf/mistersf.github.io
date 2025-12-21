@@ -52,6 +52,21 @@
         gap: 5px;
       }
 
+      .control-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .control-row input[type="number"] {
+        width: 72px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        border: 1px solid #374151;
+        background: #0b1220;
+        color: #f3f4f6;
+      }
+
       label {
         font-size: 0.85rem;
         color: #9ca3af;
@@ -91,18 +106,121 @@
       <div class="controls">
         <div class="control-group">
           <label>Expansion</label>
-          <input type="range" id="radiusInput" min="0" max="100" value="50" />
+          <div class="control-row">
+            <input type="range" id="radiusInput" min="0" max="100" value="50" />
+            <input
+              type="number"
+              id="radiusNumber"
+              min="0"
+              max="100"
+              step="1"
+              value="50"
+            />
+          </div>
         </div>
         <div class="control-group">
           <label>Segments (N)</label>
-          <input
-            type="range"
-            id="segInput"
-            min="4"
-            max="24"
-            value="8"
-            step="2"
-          />
+          <div class="control-row">
+            <input
+              type="range"
+              id="segInput"
+              min="4"
+              max="24"
+              value="8"
+              step="2"
+            />
+            <input
+              type="number"
+              id="segNumber"
+              min="4"
+              max="24"
+              step="2"
+              value="8"
+            />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Zoom</label>
+          <div class="control-row">
+            <input
+              type="range"
+              id="zoomInput"
+              min="0.5"
+              max="2"
+              value="1"
+              step="0.01"
+            />
+            <input
+              type="number"
+              id="zoomNumber"
+              min="0.5"
+              max="2"
+              step="0.01"
+              value="1"
+            />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Outer Arm Length</label>
+          <div class="control-row">
+            <input
+              type="range"
+              id="outerArmInput"
+              min="40"
+              max="200"
+              value="120"
+              step="1"
+            />
+            <input
+              type="number"
+              id="outerArmNumber"
+              min="40"
+              max="200"
+              step="1"
+              value="120"
+            />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Inner Arm Length</label>
+          <div class="control-row">
+            <input
+              type="range"
+              id="innerArmInput"
+              min="20"
+              max="180"
+              value="80"
+              step="1"
+            />
+            <input
+              type="number"
+              id="innerArmNumber"
+              min="20"
+              max="180"
+              step="1"
+              value="80"
+            />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Outer / Inner Ratio</label>
+          <div class="control-row">
+            <input
+              type="range"
+              id="ratioInput"
+              min="0.25"
+              max="3"
+              value="1.5"
+              step="0.01"
+            />
+            <input
+              type="number"
+              id="ratioNumber"
+              min="0.25"
+              max="3"
+              value="1.5"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -112,15 +230,27 @@
       const ctx = canvas.getContext("2d");
       const radiusSlider = document.getElementById("radiusInput");
       const segSlider = document.getElementById("segInput");
+      const zoomSlider = document.getElementById("zoomInput");
+      const outerArmSlider = document.getElementById("outerArmInput");
+      const innerArmSlider = document.getElementById("innerArmInput");
+      const radiusNumber = document.getElementById("radiusNumber");
+      const segNumber = document.getElementById("segNumber");
+      const zoomNumber = document.getElementById("zoomNumber");
+      const outerArmNumber = document.getElementById("outerArmNumber");
+      const innerArmNumber = document.getElementById("innerArmNumber");
+      const ratioSlider = document.getElementById("ratioInput");
+      const ratioNumber = document.getElementById("ratioNumber");
 
-      // Config
-      const CX = 250;
-      const CY = 250;
-      const ARM_LEN = 120; // Length of one scissor arm half
+      // Config defaults
+      const DEFAULT_OUTER_ARM = 120; // outer arm length (pixels)
+      const DEFAULT_INNER_ARM = 80; // inner arm length (pixels)
 
       let state = {
         segments: 8,
         expansion: 0.5, // 0.0 to 1.0
+        zoom: 1.0,
+        outerArm: DEFAULT_OUTER_ARM,
+        innerArm: DEFAULT_INNER_ARM,
       };
 
       // Helper: Find intersection of two circles
@@ -153,17 +283,26 @@
       }
 
       function draw() {
-        // Clear background
+        // Reset transform and clear full canvas (unscaled)
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // Apply zoom scale for subsequent drawing
+        ctx.setTransform(state.zoom, 0, 0, state.zoom, 0, 0);
+
         const N = state.segments;
 
+        // Center in logical (pre-scale) coordinates so scaling keeps it centered on canvas
+        const CX = canvas.width / (2 * state.zoom);
+        const CY = canvas.height / (2 * state.zoom);
+
         // 1. Calculate Pivot Radius based on expansion state
-        // We limit the Max Radius so the pivots don't go further apart than 2*ARM_LEN
+        // We limit the Max Radius so the pivots don't go further apart than 2*maxArm
         // (If pivots are too far apart, the arms can't touch)
         const angleStep = (Math.PI * 2) / N;
-        const maxChord = ARM_LEN * 1.95; // slightly less than 2*L to prevent locking
+        const maxArm = Math.max(state.outerArm, state.innerArm);
+        const maxChord = maxArm * 1.95; // slightly less than 2*L to prevent locking
         // chord = 2 * R * sin(pi/N) => MaxR = maxChord / (2*sin(pi/N))
         const maxR = maxChord / (2 * Math.sin(Math.PI / N));
         const minR = 20;
@@ -193,10 +332,10 @@
           const outerTip = getIntersection(
             p1.x,
             p1.y,
-            ARM_LEN,
+            state.outerArm,
             p2.x,
             p2.y,
-            ARM_LEN,
+            state.outerArm,
             1
           );
 
@@ -205,10 +344,10 @@
           const innerTip = getIntersection(
             p1.x,
             p1.y,
-            ARM_LEN,
+            state.innerArm,
             p2.x,
             p2.y,
-            ARM_LEN,
+            state.innerArm,
             -1
           );
 
@@ -233,19 +372,19 @@
           const outerLeft = getIntersection(
             pPrev.x,
             pPrev.y,
-            ARM_LEN,
+            state.outerArm,
             p1.x,
             p1.y,
-            ARM_LEN,
+            state.outerArm,
             1
           );
           const innerLeft = getIntersection(
             pPrev.x,
             pPrev.y,
-            ARM_LEN,
+            state.innerArm,
             p1.x,
             p1.y,
-            ARM_LEN,
+            state.innerArm,
             -1
           );
 
@@ -279,11 +418,112 @@
       function update() {
         state.expansion = parseFloat(radiusSlider.value) / 100;
         state.segments = parseInt(segSlider.value);
+        state.zoom = parseFloat(zoomSlider.value);
+        state.outerArm = parseFloat(outerArmSlider.value);
+        state.innerArm = parseFloat(innerArmSlider.value);
+        // keep ratio in state and sync display
+        state.ratio = state.outerArm / state.innerArm;
+        // Sync numeric displays
+        if (radiusNumber)
+          radiusNumber.value = Math.round(state.expansion * 100);
+        if (segNumber) segNumber.value = state.segments;
+        if (zoomNumber) zoomNumber.value = state.zoom;
+        if (outerArmNumber) outerArmNumber.value = state.outerArm;
+        if (innerArmNumber) innerArmNumber.value = state.innerArm;
+        if (ratioNumber) ratioNumber.value = Number(state.ratio.toFixed(2));
+        if (ratioSlider) ratioSlider.value = Number(state.ratio.toFixed(2));
+
         draw();
       }
 
       radiusSlider.addEventListener("input", update);
       segSlider.addEventListener("input", update);
+      zoomSlider.addEventListener("input", update);
+      outerArmSlider.addEventListener("input", update);
+      innerArmSlider.addEventListener("input", update);
+      if (ratioSlider) {
+        ratioSlider.addEventListener("input", (e) => {
+          let r = parseFloat(e.target.value);
+          if (isNaN(r) || r <= 0) r = state.outerArm / state.innerArm;
+          // update innerArm to match desired ratio (keep outerArm constant)
+          const newInner = state.outerArm / r;
+          // clamp to inner range
+          const minInner = parseFloat(innerArmInput.min) || 20;
+          const maxInner = parseFloat(innerArmInput.max) || 180;
+          const clamped = Math.max(minInner, Math.min(maxInner, newInner));
+          innerArmInput.value = clamped;
+          if (innerArmNumber) innerArmNumber.value = Math.round(clamped);
+          update();
+        });
+      }
+
+      if (ratioNumber) {
+        ratioNumber.addEventListener("change", (e) => {
+          let r = parseFloat(e.target.value);
+          if (isNaN(r) || r <= 0) return;
+          const newInner = state.outerArm / r;
+          const minInner = parseFloat(innerArmSlider.min) || 20;
+          const maxInner = parseFloat(innerArmSlider.max) || 180;
+          const clamped = Math.max(minInner, Math.min(maxInner, newInner));
+          innerArmSlider.value = clamped;
+          if (innerArmNumber) innerArmNumber.value = Math.round(clamped);
+          update();
+        });
+      }
+      // Numeric input -> slider two-way bindings
+      if (radiusNumber) {
+        radiusNumber.addEventListener("change", (e) => {
+          let v = parseFloat(e.target.value);
+          if (isNaN(v)) v = 0;
+          if (v < 0) v = 0;
+          if (v > 100) v = 100;
+          radiusSlider.value = v;
+          update();
+        });
+      }
+
+      if (segNumber) {
+        segNumber.addEventListener("change", (e) => {
+          let v = parseInt(e.target.value) || 4;
+          if (v < 4) v = 4;
+          if (v > 24) v = 24;
+          // enforce even step
+          if (v % 2 !== 0) v = v + 1;
+          segSlider.value = v;
+          update();
+        });
+      }
+
+      if (zoomNumber) {
+        zoomNumber.addEventListener("change", (e) => {
+          let v = parseFloat(e.target.value);
+          if (isNaN(v)) v = 1;
+          if (v < 0.5) v = 0.5;
+          if (v > 2) v = 2;
+          zoomSlider.value = v;
+          update();
+        });
+      }
+
+      if (outerArmNumber) {
+        outerArmNumber.addEventListener("change", (e) => {
+          let v = parseFloat(e.target.value) || 40;
+          if (v < 40) v = 40;
+          if (v > 200) v = 200;
+          outerArmSlider.value = v;
+          update();
+        });
+      }
+
+      if (innerArmNumber) {
+        innerArmNumber.addEventListener("change", (e) => {
+          let v = parseFloat(e.target.value) || 20;
+          if (v < 20) v = 20;
+          if (v > 180) v = 180;
+          innerArmSlider.value = v;
+          update();
+        });
+      }
 
       // Mouse Drag Interaction
       let isDragging = false;
@@ -293,8 +533,13 @@
       canvas.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        // Convert mouse to logical (pre-scale) coordinates
+        const x = (e.clientX - rect.left) / state.zoom;
+        const y = (e.clientY - rect.top) / state.zoom;
+
+        // Compute logical center
+        const CX = canvas.width / (2 * state.zoom);
+        const CY = canvas.height / (2 * state.zoom);
 
         // Simple distance from center controls expansion
         const dist = Math.sqrt((x - CX) ** 2 + (y - CY) ** 2);
@@ -305,7 +550,8 @@
 
         state.expansion = val;
         radiusSlider.value = val * 100;
-        draw();
+        if (radiusNumber) radiusNumber.value = Math.round(val * 100);
+        update();
       });
 
       // Initial draw
