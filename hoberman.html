@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Robust Hoberman Simulator</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background-color: #111827;
+        color: #f3f4f6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .container {
+        position: relative;
+        background: #1f2937;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        text-align: center;
+      }
+
+      canvas {
+        background: #000;
+        border-radius: 8px;
+        border: 1px solid #374151;
+        cursor: grab;
+      }
+      canvas:active {
+        cursor: grabbing;
+      }
+
+      .controls {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        text-align: left;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      label {
+        font-size: 0.85rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        cursor: pointer;
+        accent-color: #3b82f6;
+      }
+
+      .header {
+        margin-bottom: 15px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+      p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Hoberman Mechanism</h2>
+        <p>Drag slider or canvas to expand/contract</p>
+      </div>
+
+      <canvas id="canvas" width="500" height="500"></canvas>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>Expansion</label>
+          <input type="range" id="radiusInput" min="0" max="100" value="50" />
+        </div>
+        <div class="control-group">
+          <label>Segments (N)</label>
+          <input
+            type="range"
+            id="segInput"
+            min="4"
+            max="24"
+            value="8"
+            step="2"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const radiusSlider = document.getElementById("radiusInput");
+      const segSlider = document.getElementById("segInput");
+
+      // Config
+      const CX = 250;
+      const CY = 250;
+      const ARM_LEN = 120; // Length of one scissor arm half
+
+      let state = {
+        segments: 8,
+        expansion: 0.5, // 0.0 to 1.0
+      };
+
+      // Helper: Find intersection of two circles
+      // Used to find where the arm tips MUST be to connect adjacent pivots
+      function getIntersection(x1, y1, r1, x2, y2, r2, side) {
+        const d2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+        const d = Math.sqrt(d2);
+
+        // Circles too far apart or contained within each other
+        if (d > r1 + r2 || d < Math.abs(r1 - r2) || d === 0) return null;
+
+        const a = (r1 * r1 - r2 * r2 + d2) / (2 * d);
+        const h = Math.sqrt(Math.max(0, r1 * r1 - a * a));
+
+        const x2_part = x2 - x1;
+        const y2_part = y2 - y1;
+
+        const x0 = x1 + (a * x2_part) / d;
+        const y0 = y1 + (a * y2_part) / d;
+
+        const rx = -y2_part * (h / d);
+        const ry = x2_part * (h / d);
+
+        // "side" determines which of the two intersection points we pick (inner or outer)
+        if (side > 0) {
+          return { x: x0 + rx, y: y0 + ry };
+        } else {
+          return { x: x0 - rx, y: y0 - ry };
+        }
+      }
+
+      function draw() {
+        // Clear background
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const N = state.segments;
+
+        // 1. Calculate Pivot Radius based on expansion state
+        // We limit the Max Radius so the pivots don't go further apart than 2*ARM_LEN
+        // (If pivots are too far apart, the arms can't touch)
+        const angleStep = (Math.PI * 2) / N;
+        const maxChord = ARM_LEN * 1.95; // slightly less than 2*L to prevent locking
+        // chord = 2 * R * sin(pi/N) => MaxR = maxChord / (2*sin(pi/N))
+        const maxR = maxChord / (2 * Math.sin(Math.PI / N));
+        const minR = 20;
+
+        const currentR = minR + state.expansion * (maxR - minR);
+
+        // 2. Calculate Pivot Positions
+        const pivots = [];
+        for (let i = 0; i < N; i++) {
+          const theta = i * angleStep;
+          pivots.push({
+            x: CX + currentR * Math.cos(theta),
+            y: CY + currentR * Math.sin(theta),
+          });
+        }
+
+        // 3. Draw Mechanisms
+        ctx.lineWidth = 3;
+        ctx.lineJoin = "round";
+
+        for (let i = 0; i < N; i++) {
+          const p1 = pivots[i];
+          const p2 = pivots[(i + 1) % N]; // Next pivot
+          const pPrev = pivots[(i - 1 + N) % N]; // Previous pivot
+
+          // Find OUTER intersection (Tip connecting current and next)
+          const outerTip = getIntersection(
+            p1.x,
+            p1.y,
+            ARM_LEN,
+            p2.x,
+            p2.y,
+            ARM_LEN,
+            1
+          );
+
+          // Find INNER intersection (Tip connecting current and next)
+          // We use -1 to get the point closer to center
+          const innerTip = getIntersection(
+            p1.x,
+            p1.y,
+            ARM_LEN,
+            p2.x,
+            p2.y,
+            ARM_LEN,
+            -1
+          );
+
+          // If geometry is invalid (e.g. radius too big), skip drawing
+          if (!outerTip || !innerTip) continue;
+
+          // DRAWING LOGIC:
+          // A Hoberman angulated element is a bent rod.
+          // We draw two rods crossing at the pivot P1.
+
+          // Rod A: Connects Inner-Left to Outer-Right
+          // But here we just calculate the shared joints.
+          // Let's draw the lines from Pivot to the calculated tips.
+
+          // To make it look like "Scissors":
+          // We need the tip shared with Next (Right) and Tip shared with Prev (Left).
+
+          const outerRight = outerTip; // Shared with i+1
+          const innerRight = innerTip; // Shared with i+1
+
+          // Recalculate intersections with PREVIOUS neighbor for the left side of this pivot
+          const outerLeft = getIntersection(
+            pPrev.x,
+            pPrev.y,
+            ARM_LEN,
+            p1.x,
+            p1.y,
+            ARM_LEN,
+            1
+          );
+          const innerLeft = getIntersection(
+            pPrev.x,
+            pPrev.y,
+            ARM_LEN,
+            p1.x,
+            p1.y,
+            ARM_LEN,
+            -1
+          );
+
+          if (outerLeft && innerLeft) {
+            // Draw "Angulated Element 1": InnerLeft -> Pivot -> OuterRight
+            ctx.strokeStyle = "#3b82f6"; // Blue
+            ctx.beginPath();
+            ctx.moveTo(innerLeft.x, innerLeft.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(outerRight.x, outerRight.y);
+            ctx.stroke();
+
+            // Draw "Angulated Element 2": InnerRight -> Pivot -> OuterLeft
+            ctx.strokeStyle = "#ef4444"; // Red
+            ctx.beginPath();
+            ctx.moveTo(innerRight.x, innerRight.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(outerLeft.x, outerLeft.y);
+            ctx.stroke();
+          }
+
+          // Draw Pivot Dot
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(p1.x, p1.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Input Handling
+      function update() {
+        state.expansion = parseFloat(radiusSlider.value) / 100;
+        state.segments = parseInt(segSlider.value);
+        draw();
+      }
+
+      radiusSlider.addEventListener("input", update);
+      segSlider.addEventListener("input", update);
+
+      // Mouse Drag Interaction
+      let isDragging = false;
+      canvas.addEventListener("mousedown", () => (isDragging = true));
+      window.addEventListener("mouseup", () => (isDragging = false));
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Simple distance from center controls expansion
+        const dist = Math.sqrt((x - CX) ** 2 + (y - CY) ** 2);
+        const maxDist = 230;
+        let val = dist / maxDist;
+        if (val > 1) val = 1;
+        if (val < 0) val = 0;
+
+        state.expansion = val;
+        radiusSlider.value = val * 100;
+        draw();
+      });
+
+      // Initial draw
+      update();
+    </script>
+  </body>
+</html>
